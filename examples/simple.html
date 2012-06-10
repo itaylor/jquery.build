@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <script src="../lib/jquery-1.7.2.js"></script>
+  <script src="../jquery.build.js"></script>
+</head>
+<body>
+ <div id="target"></div>
+ <script type="text/javascript">
+ 	
+$(function (){
+  var bombermanCharacters = [ 
+		{name:"Construction Bomberman", id:"construct"}, 
+		{name:"Standard Bomberman", id:"bomberman"},
+		{name:"Kamikaze Bomberman", id:"kamikaze"},
+		{name:"Bookworm Bomberman", id:"bookworm"}	
+	]
+	
+  var $b = $.build;
+  var target = jQuery("#target");
+  
+  var clickFn = function(){
+    var selection = target.find("input:radio[name=builderRadio]:checked").val()
+		if(selection){
+			target.find("#"+selection +" .picked").show();
+			target.find(".picker").hide();
+		}
+  };
+  
+  target.append(
+    $b(".votetest", [
+      $b("h2", "Simple Example"),
+      $b(".intro", "This example creates a small form that allow you to vote for a Bomberman 94 character."),
+      $b(".voteheader", "Pick your favorite Bomberman 94 character ($.build)"),
+       $.map(bombermanCharacters, function (bm){
+         return $b(".voteitem#"+bm.id, [
+           $b("img", {src:"../images/char-"+bm.id+".png"}),
+           $b(".picker", [
+             $b("label", {'for':bm.id+"Rb"}, bm.name),
+             $b("input[type=radio]#"+bm.id+"Rb", {value:bm.id, name:"builderRadio"}),
+           ]),
+           $b(".picked", ["You selected ",  bm.name, "!"]).hide()
+         ])
+      }),
+      $b(".votebuttonHolder", 
+        $b("button[type=button]", "Vote").click(clickFn))
+    ])
+  );
+});
+ 	
+  </script>
+</body>
+</html>

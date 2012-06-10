@@ -22,182 +22,269 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-(function ($){
-  /** Support functions */
-
-  /**
-   * Creates a shallow clone of an array.
-   */
-  var arrayClone = function (arr){
-    var a = [];
-    $.each(arr, function (i, o){a.push(o);});
-    return a;
-  };
-  
-  var htmlDecode = function(str){
-    str = str.replace(/&apos;/g, "'"); //IE doesn't render &apos; but really, no browser should so we turn it into an apostrophe for all browsers.
-    if (str.indexOf("<") == -1){
-      return $("<div/>").html(str).text();
-    }
-    var ta=$.build("textarea");
-    ta.html(str.replace(/</g,"&lt;").replace(/>/g,"&gt;"));
-    return ta.val();
-  };
-
-  var addHtmlTextToFrag = function (f, text){
-    var decodedTxt = htmlDecode(text);
-    // Fast case for no tags.
-    if (decodedTxt.indexOf("<") === -1){
-      f.appendChild(document.createTextNode(decodedTxt));
-      return;
-    }        
-    var tempElem = document.createElement("div");
-    tempElem.innerHTML = decodedTxt;
-    var c = arrayClone(tempElem.childNodes);
-    var len = c.length;
-    for(var i = 0; i < len; i++){
-      f.appendChild(c[i]);
-    }
-  };
-  var addFx =  function (f, item){
-    if (item.jquery){
-      f.appendChild(item.get(0));
-    }
-    else if (item.nodeType == 1 || item.nodeType == 3 || item.nodeType == 11){ 
-      /* Element, Text, and DocumentFragment nodes get appended */
-      f.appendChild(item);
-    }
-    else{ 
-      addHtmlTextToFrag(f, item);
-    }
-  };
-  /**
-   * @function Allows you to create a new DocumentFragment node by passing in
-   *           jQuery objects, Dom Nodes, or text strings, either inside of an
-   *           array or as a single item.
-   * 
-   * See: http://ejohn.org/blog/dom-documentfragments/ for more on why to use
-   * documentfragments.
-   */
-  var docFrag = function (children){
-    var f = document.createDocumentFragment();
-    if (children){
-      if ($.isArray(children)) {
-        var i =0;
-        var l = children.length;
-        for(i = 0; i < l; i++)
-          addFx(f, docFrag(children[i]));
+(function (){
+    var ctor = function ($, document){
+      /** Capability detection **/
+      
+      // IE Pre 9 has a weird bug with buttons and input tags that
+      // causes it to throw exceptions when trying to set type
+      // After the element has been created.
+      var hasNormalInputButtonCreate = true;
+      try{
+        var btn = document.createElement("button");
+        btn.type = "button";
       }
-      else {
-        addFx(f,children);
+      catch (e){
+        hasNormalInputButtonCreate = false;
       }
-    }
-    return f;
-  };
+      
+      //Many versions of IE will eat spaces off the front and back of text nodes
+      var spaceTestElem = document.createElement("div");
+      spaceTestElem.innerHTML = " s ";
+      var spaceTestValue = spaceTestElem.childNodes[0].nodeValue;
+      var requiresLeadingSpace = spaceTestValue.indexOf(" ") != 0;
+      var requiresTrailingSpace = spaceTestValue.lastIndexOf(" ") != 2; 
+      /** End Capability detection  */
 
-  /* End support functions */
+      /** Support functions */
+
+      //Regex Caching
+      var regexApos = /&apos;/g;
+      var regexLt = /</g;
+      var regexGt = />/g;
+      // These selector expressions were ripped from the Sizzle code.
+      var elemExpr = /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/;
+      var idExpr = /#((?:[\w\u00c0-\uFFFF_-]|\\.)+)/;
+      var classExpr = /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)/g;
+      var attrExpr = /\[\s*((?:[\w\u00c0-\uFFFF_-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/g;
+      var attrPart = /[\[\]]/g;
 
 
-  // IE Pre 9 has a weird bug with buttons and input tags that
-  // causes it to throw exceptions when trying to set type
-  // After the element has been created.
-  var hasNormalInputButtonCreate = true;
-  try{
-    var btn = document.createElement("button");
-    btn.type = "button";
-  }
-  catch (e){
-    hasNormalInputButtonCreate = false;
-  }
-
-  // These selector expressions were ripped from the Sizzle code.
-  // We cache them here via closure.
-  var elemExpr = /^((?:[\w\u00c0-\uFFFF\*_-]|\\.)+)/;
-  var idExpr = /#((?:[\w\u00c0-\uFFFF_-]|\\.)+)/;
-  var classExpr = /\.((?:[\w\u00c0-\uFFFF_-]|\\.)+)/g;
-  var attrExpr = /\[\s*((?:[\w\u00c0-\uFFFF_-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/g;
-  var attrPart = /[\[\]]/g;
-
-  $.build = function (selector, attributes, children){
-    if(arguments.length == 2 && attributes!=null &&
-        (typeof attributes == "string" || $.isArray(attributes) || attributes.tagName || attributes.jquery)){
-      children = attributes;
-      attributes = {};
-    }
-    attributes = attributes || {};
-    selector = selector || "";
-
-    var elemTag;
-    elemTag = selector.match(elemExpr);
-    if(elemTag){
-      elemTag = elemTag[0];
-    }
-    var id = selector.match(idExpr);
-    var className = selector.match(classExpr);
-    var attrs = selector.match(attrExpr);
-    elemTag = elemTag || "div";
-    if (id){
-      attributes.id = id[1];
-    }
-    if (attrs){
-      $.each(attrs, function (i, attr){
-        var parts = attr.replace(attrPart, "").split("=");
-        if (parts && parts.length ==2){
-          attributes[parts[0]] = parts[1];
+      /**
+       * Creates a shallow clone of an array.
+       */
+      var arrayClone = function (arr){
+        var a = [];
+        $.each(arr, function (i, o){a.push(o);});
+        return a;
+      };
+      
+      var addHtmlTextToFrag = function (f, text){
+       
+      };
+      var addPlainTextToFrag = function (f, text){
+        if(requiresLeadingSpace && text.charAt(0) === " "){
+          f.appendChild(document.createTextNode(" "));
         }
-      });
-    }
-    var elem;
-    if(!hasNormalInputButtonCreate && (elemTag === "input" || elemTag ==="button")){
-      // In IE versions before IE 9, an input or button type can only be set
-      // once, at creation. If you try to set it
-      // after the fact, you get exceptions
-      var type = attributes.type ? "type=\""+attributes.type+"\"" : ""; 
-      // Name has to be set at creation time for radio buttons only, but
-      // doesn't hurt for any other input/buttons.
-      var name = attributes.name ? "name=\""+attributes.name+"\"" : "";
-      elem = $(document.createElement("<"+elemTag+" " +type+" " +name+">"));
+        f.appendChild(document.createTextNode(text));
+        if(requiresTrailingSpace && text.charAt(text.length -1) === " "){
+          f.appendChild(document.createTextNode(" "));
+        }
+      };
+      
+      
+      var addFx =  function (f, item){
+        if(!item){
+          return;
+        }
+        if (item.jquery){
+          f.appendChild(item.get(0));
+        }
+        else if (item.nodeType == 1 || item.nodeType == 3 || item.nodeType == 11){ 
+          /* Element, Text, and DocumentFragment nodes get appended */
+          f.appendChild(item);
+        }
+        else if ($.isArray(item)){
+          var i = 0;
+          var l = item.length;
+          for(i = 0; i < l; i++){
+             addFx(f, item[i]);
+          }
+        }
+        else{
+          addPlainTextToFrag(f, item.toString());
+        }
+      };
+      /**
+       * @function Allows you to create a new DocumentFragment node by passing in
+       *           jQuery objects, Dom Nodes, or text strings, either inside of an
+       *           array or as a single item.
+       * 
+       * See: http://ejohn.org/blog/dom-documentfragments/ for more on why to use
+       * documentfragments.
+       */
+      var docFrag = function (children){
+        var f = document.createDocumentFragment();
+        if (children){
+          if ($.isArray(children)) {
+            var i =0;
+            var l = children.length;
+            for(i = 0; i < l; i++){
+              addFx(f, children[i]);
+            }
+          }
+          else {
+            addFx(f,children);
+          }
+        }
+        return f;
+      };
+      
+      /**
+       * @function This function converts a HTML string to a DocumentFragment.
+       * It uses Element.innerHTML to do the parsing, so it's as fast as possible.
+       * 
+       * Basically, if you want HTML to pass through $.build without it being HTMLEncoded,
+       * you must wrap the text with a call to this function.
+       * 
+       * 
+       * @example: 
+       *  $.build("div", [ 
+       *    $.build.html("This is a <em>HTML</em> string!"),
+       *    "This is a <em>Plain Text</em> string!
+       *   ]);
+       *  result:
+       *  <div>
+       *    This is a <em>HTML</em> string!
+       *    This is a &lt;em&gt;Plain Text&lt;/em&gt; string!
+       *  </div>
+       */
+      var html = function (text){
+        var f = document.createDocumentFragment();
+        if(text){
+          //When documentFragment.innerHTML is implemented, we'll be able to get rid of this hack.
+          var tempElem = document.createElement("div");
+          tempElem.innerHTML = text.replace(regexApos, "'");
+          if(requiresLeadingSpace && text.indexOf(" ") == 0){
+            f.appendChild(document.createTextNode(" "));
+          }
+          while(tempElem.hasChildNodes()){
+            //appending to a new parent removes the item from the old parent, 
+            //thus this operation is safe and fast.
+            f.appendChild(tempElem.firstChild);
+          }
+          if(requiresTrailingSpace && text.lastIndexOf(" ") == (text.length -1)){
+            f.appendChild(document.createTextNode(" "));
+          }
+        }
+        return f;
+      };
 
-      delete attributes["type"];
-      delete attributes["name"];
-    }
-    else{
-      elem = $(document.createElement(elemTag));
-    }
-    // Set the attributes using jQuery.
-    elem.attr(attributes);
+      /* End support functions */
 
-    if(elemTag === "img"){
-      // IE 8 bug with image elements in IE 8 standards mode.
-      // IE 8 will automatically add in width and height attributes to 'help'
-      // you if it has the image already in its cache.
-      // in doing so, it craps up it's own rendering if there is a max-height
-      // or max-width style applied.
-      // we will remove any unrequested height and width attributes here.
-      if(!attributes.width){
-        elem.removeAttr("width");
-      }
-      if(!attributes.height){
-        elem.removeAttr("height");
-      }        
-    }
-    if (className){
-      var cls ="";
-      $.each(className, function (i, str) { cls+= str.replace(".", "") + " ";});
-      elem.addClass($.trim(cls));
-    }    
+      $.build = function (selector, attributes, children){
+        if(arguments.length == 2 && attributes!=null &&
+            (typeof attributes == "string" || $.isArray(attributes) || attributes.nodeType || attributes.jquery)){
+          children = attributes;
+          attributes = null;
+        }
+        selector = selector || "";
 
-    if (children){
-      if(children.nodeType == 11)
-        // Already a document fragment.
-        elem.append(children);
-      else
-        elem.append(docFrag(children));
+        var elemTag;
+        elemTag = selector.match(elemExpr);
+        if(elemTag){
+          elemTag = elemTag[0];
+        }
+        var id = null;
+        if(selector.indexOf("#") != -1){
+          var id = selector.match(idExpr);
+          if (id){
+              id = id[1];
+          }
+          else{
+            id = null;
+          } 
+        }
+        var className;
+        if(selector.indexOf(".") != -1){
+          className = selector.match(classExpr);
+        }
+        var attrs;
+        if(selector.indexOf("[") != -1){
+          attrs = selector.match(attrExpr);
+        }
+        elemTag = elemTag || "div";
+        if (attrs){
+          attributes = attributes || {};
+          $.each(attrs, function (i, attr){
+            var parts = attr.replace(attrPart, "").split("=");
+            if (parts && parts.length ==2){
+              attributes[parts[0]] = parts[1];
+            }
+          });
+        }
+        attributes = attributes || {};
+        var elem;
+        if(!hasNormalInputButtonCreate && (elemTag === "input" || elemTag ==="button")){
+          // In IE versions before IE 9, an input or button type can only be set
+          // once, at creation. If you try to set it
+          // after the fact, you get exceptions
+          var type = attributes.type ? "type=\""+attributes.type+"\"" : ""; 
+          // Name has to be set at creation time for radio buttons only, but
+          // doesn't hurt for any other input/buttons.
+          var name = attributes.name ? "name=\""+attributes.name+"\"" : "";
+          elem = document.createElement("<"+elemTag+" " +type+" " +name+">");
+
+          delete attributes["type"];
+          delete attributes["name"];
+        }
+        else{
+          elem = document.createElement(elemTag);
+        }
+
+        var jqElem = $(elem);
+        
+        // Set the attributes using jQuery.
+        if(attributes){
+          jqElem.attr(attributes);
+        }
+        if(id){
+          elem.id = id;
+        }
+        
+        
+        if(elemTag === "img"){
+          // IE 8 bug with image elements in IE 8 standards mode.
+          // IE 8 will automatically add in width and height attributes to 'help'
+          // you if it has the image already in its cache.
+          // in doing so, it craps up it's own rendering if there is a max-height
+          // or max-width style applied.
+          // we will remove any unrequested height and width attributes here.
+          if(!attributes.width){
+            jqElem.removeAttr("width");
+          }
+          if(!attributes.height){
+            jqElem.removeAttr("height");
+          }       
+        }
+        if (className){
+          var cls ="";
+          $.each(className, function (i, str) { cls+= str.replace(".", "") + " ";});
+          elem.className = $.trim(elem.className + " " + cls);
+        }    
+
+        if (children){
+          if(children.nodeType == 11)
+            // Already a document fragment.
+            elem.appendChild(children);
+          else
+            elem.appendChild(docFrag(children));
+        }
+        return jqElem;
+      };
+      
+      //expose docFrag and html children of $.build 
+      $.build.docFrag = docFrag;
+      $.build.html = html;
+      return $.build;
+    };
+    
+    if(typeof module !== "undefined" && module.exports){
+      module.exports = ctor;
     }
-    return elem;
-  };
-  
-  //expose docFrag as a child of $.build (mostly for testing purposes, but still useful in its own right)
-  $.build.docFrag = docFrag;
-})(jQuery);
+    if(typeof window !== "undefined" && window.jQuery && window.document) {
+      ctor(window.jQuery, window.document);
+    }
+}
+)();
+
