@@ -4,7 +4,7 @@
         / / /_/ / /_/ /  __/ /  / /_/ /_ / /_/ / /_/ / / // /_/ /  
      __/ /\___\_\__,_/\___/_/   \__, /(_)_.___/\__,_/_/_/ \__,_/    v1_0_0  
     /___/                      /____/                              
-                                                           ---------------------------------------------------------------------------------
+    -----------------------------------------------------------------------
 
 A DOM Node builder for jQuery in the spirit of Scriptaculous Builder.node
 
@@ -17,6 +17,7 @@ A DOM Node builder for jQuery in the spirit of Scriptaculous Builder.node
 * MIT Licensed.
 
 ##Example syntax:
+```javascript
     var $b = $.build;
 	  var elem = $b("#usernameWrapper", [
   		$b("label[for=username]", "Enter your username"),
@@ -26,12 +27,15 @@ A DOM Node builder for jQuery in the spirit of Scriptaculous Builder.node
   		    alert("hey");
   		  })
 	  ]);
+```
 This generates a jQuery wrapped DOM node in the elem variable with the HTML content:
+```html
     <div id="usernameWrapper">
       <label for="username">Enter your username</label>
       <input id="username" type="text">
       <button type="button">Save<button>
     </div>
+```
 Additionally, the button element has a click handler bound to to it.
 
 The return of each call to $.build is a jQuery object, which makes all kinds of fun function chaining possible.  This is an overly simple example, though, and doesn't show much of the power and flexibility of the syntax.  For more in-depth code samples and use cases see the examples and tests folders.
@@ -43,7 +47,8 @@ The return of each call to $.build is a jQuery object, which makes all kinds of 
  For an example, see `/examples/simple.html`
  
 ##Using inside of Node.js    
-At present, it's not particularly useful to include jQuery.build in node.js, however, I've got another project in the pipeline that will fix that :-).  That said, you can definitely do it today using jsdom and jquery to provide the DOM manipulation support it needs.  There is code that does this in `/test/setup.js` that is used to run the unit tests under node.js/jsdom. 
+At present, it's not particularly useful to include jQuery.build in node.js, however, I've got another project in the pipeline that will seek to fix that :-) 
+That said, you can definitely do it today using jsdom and jquery to provide the DOM manipulation support it needs.  There some is code that does this in `/test/setup.js` that is used to run the unit tests under node.js/jsdom if you're interested. 
 
 You can install with `npm install jquery.build`
 You can run the tests with `npm test`  
