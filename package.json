@@ -3,7 +3,6 @@
     "description": "A DOM Builder plugin for jQuery",
     "version": "1.0.0",
     "author": "Ian Taylor <ian.b.taylor@gmail.com>",
-    "private": true,
     "repositories": {
      "type": "git",
      "url": "http://github.com/itaylor/jquery.build.git" 
