@@ -152,19 +152,23 @@
       var html = function (text){
         var f = document.createDocumentFragment();
         if(text){
-          //When documentFragment.innerHTML is implemented, we'll be able to get rid of this hack.
-          var tempElem = document.createElement("div");
-          tempElem.innerHTML = text.replace(regexApos, "'");
-          if(requiresLeadingSpace && text.indexOf(" ") == 0){
-            f.appendChild(document.createTextNode(" "));
-          }
-          while(tempElem.hasChildNodes()){
-            //appending to a new parent removes the item from the old parent, 
-            //thus this operation is safe and fast.
-            f.appendChild(tempElem.firstChild);
-          }
-          if(requiresTrailingSpace && text.lastIndexOf(" ") == (text.length -1)){
-            f.appendChild(document.createTextNode(" "));
+          //Browsers/DOM impls supporting DocumentFragment.innerHTML get a fast track. 
+          if(typeof f.innerHTML != "undefined"){
+            f.innerHTML = text;
+          }else{
+            var tempElem = document.createElement("div");
+            tempElem.innerHTML = text.replace(regexApos, "'");
+            if(requiresLeadingSpace && text.indexOf(" ") == 0){
+              f.appendChild(document.createTextNode(" "));
+            }
+            while(tempElem.hasChildNodes()){
+              //appending to a new parent removes the item from the old parent, 
+              //thus this operation is safe and fast.
+              f.appendChild(tempElem.firstChild);
+            }
+            if(requiresTrailingSpace && text.lastIndexOf(" ") == (text.length -1)){
+              f.appendChild(document.createTextNode(" "));
+            }
           }
         }
         return f;

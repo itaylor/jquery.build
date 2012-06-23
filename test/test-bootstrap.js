@@ -24,5 +24,5 @@
       );
     });  
   }
-  document.write("<script>qUnitBootStrap();</script>");    
+  document.write("<script defer>qUnitBootStrap();</script>");    
 })();
