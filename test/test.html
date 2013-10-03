@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>jquery.build tests</title>
+    <script src="../node_modules/es5-shim/es5-shim.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../lib/jquery-1.10.2.js"></script>
+    <script src="../jquery.build.js"></script>
+    <script src="../lib/qunit-helpers.js"></script>
+    <script src="../lib/benchmark.js"></script>
+    <script src="../node_modules/qunit-mocha-ui/qunit-mocha-ui-browser.js"></script>
+    <script>
+      mocha.setup({ui:"qunit-mocha-ui"});
+    </script>
+    <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css">
+    <!-- Link your test here! -->
+    <script src="build.test.js"></script>
+    <script src="docfrag.test.js"></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script>
+      mocha.run();
+    </script>
+  </body>
+</html>

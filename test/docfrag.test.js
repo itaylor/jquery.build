@@ -1,4 +1,7 @@
-var $ = window.$ || window.jQuery;
+if(typeof window === "undefined"){
+  require("./setupWindow.js");
+}
+suite("$.build.docFrag tests");
 
 test("Simple base case with three elements in an array", 1, function() {
   var elem1 = document.createElement("div");

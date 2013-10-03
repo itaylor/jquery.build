@@ -43,9 +43,15 @@
 </div>
  */
 
-var $ = window.$ || window.jQuery;
+if(typeof window === "undefined"){
+  require("./setupWindow.js");
+}
+
+suite("Benchmark test")
 
 asyncTest("Benchmark.js run of three implementations of the same UI", 1, function (){
+  this.timeout(50000);
+
  	var bombermanCharacters = [ 
 		{name:"Construction Bomberman", id:"construct"}, 
 		{name:"Standard Bomberman", id:"bomberman"},
@@ -53,7 +59,7 @@ asyncTest("Benchmark.js run of three implementations of the same UI", 1, functio
 		{name:"Bookworm Bomberman", id:"bookworm"}	
 	]
 	
-	
+
   //Using $.build 
   var builder = function (appendTo){
     var $b = $.build;
@@ -187,7 +193,7 @@ asyncTest("Benchmark.js run of three implementations of the same UI", 1, functio
   					appendTo.find("#"+selection +" .picked").show();
   					appendTo.find(".picker").hide();
   				}
-        })
+        });
   };
   
   

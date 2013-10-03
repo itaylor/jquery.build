@@ -1,4 +1,7 @@
-var $ = window.$ || window.jQuery;
+if(typeof window === "undefined"){
+  require("./setupWindow.js");
+}
+suite("$.build tests");
 
 test("$.build selector defaults to div", 1, function() {
   var elem1 = $.build();
@@ -157,15 +160,13 @@ test("$.build XSS attacks are not possible (html is escaped) when using text str
 
 test("$.build XSS attacks ARE possible (html is NOT escaped) when using HTML blocks", function (){
   window.hackcount = 0;
-  var userdata = {username:"hackbot", comment:"here's my attack!<script> window.hackcount++; </script>" }
+  var userdata = {username:"hackbot", comment:"here's my attack!<script> window.hackcount++;</script>" }
   var elem = $.build(".comment", [
     $.build(".author", userdata.username),
     $.build(".comment", $.build.html(userdata.comment))
   ]);
-  var tgt = $.build("div");
-  //JQuery rips out script nodes when doing append to prevent double execution, useful for real life, but bad for tests... 
-  tgt.append(elem);
-  htmlCompare(tgt.html(), "<div class=\"comment\"><div class=\"author\">hackbot</div><div class=\"comment\">here's my attack!</div></div>");
+  $("body").append(elem);
+  ok(elem.html().indexOf("window.hackcount++") != -1);
   equal(window.hackcount, 1)
 });
 

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>jquery.build benchmark test</title>
+    <script src="../node_modules/es5-shim/es5-shim.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../lib/jquery-1.10.2.js"></script>
+    <script src="../jquery.build.js"></script>
+    <script src="../lib/qunit-helpers.js"></script>
+    <script src="../lib/benchmark.js"></script>
+    <script src="../node_modules/qunit-mocha-ui/qunit-mocha-ui-browser.js"></script>
+    <script>
+      mocha.setup({ui:"qunit-mocha-ui"});
+    </script>
+    <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css">
+    <!-- Link your test here! -->
+    <script src='bench.js'></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <div class="explanation">
+    Each of these tests renders the same HTML, a series of nested divs, images, inputs and buttons.   that represent a simple voting application, where you vote for the best Bomberman 94 character.
+    <div>The three scenarios are:</div>
+    <ol>
+        <li>jQuery.build is used to build the elements, listeners are added inline as they are created.</li>
+        <li>Elements built with jQuery's DOM Builder functions, appended and bound to their listeners as the elements are added.</li>
+        <li>Elements are built with native DOM manipulation, with no helper libraries.</li
+    </ol>  
+  </div>
+    <script>
+      mocha.run();
+    </script>
+  </body>
+</html>
