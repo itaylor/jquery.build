@@ -47,11 +47,11 @@ The return of each call to $.build is a jQuery object, which makes all kinds of 
  For an example, see `/examples/simple.html`
  
 ##Using inside of Node.js    
-At present, it's not particularly useful to include jQuery.build in node.js, however, I've got another project in the pipeline that will seek to fix that :-) 
-That said, you can definitely do it today using jsdom and jquery to provide the DOM manipulation support it needs.  There some is code that does this in `/test/setup.js` that is used to run the unit tests under node.js/jsdom if you're interested. 
+
+This can be run server-side in node.js when used with a dom implmentation like jsdom.  Take a look at the tests for an example of doing this.
 
 You can install with `npm install jquery.build`
-You can run the tests with `npm test`  
+You can run the tests with `grunt test`
 
 ##History:
 I fell in love with the Builder.node syntax back in 2007.  Since then I've written several versions of node builders for different JS frameworks.  This is the one that I've eventually settled on as being my go-to way for creating markup from JavaScript.  I find it preferable to templating solutions, as it can intermingled with code in a way that is difficult to do with templates.
