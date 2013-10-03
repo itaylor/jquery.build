@@ -37,6 +37,12 @@
       catch (e){
         hasNormalInputButtonCreate = false;
       }
+      //IE < 9 can't create stylesheets like normal elements, it has to use 
+      //a funky cssText property on its proprietary styleSheet object.
+      var tempStyle = document.createElement("style");
+      tempStyle.type = "text/css";
+      var funkyStylesheetCreate = tempStyle.styleSheet && ('cssText' in tempStyle.styleSheet);
+
       
       //Many versions of IE will eat spaces off the front and back of text nodes
       var spaceTestElem = document.createElement("div");
@@ -267,7 +273,16 @@
           elem.className = $.trim(elem.className + " " + cls);
         }    
 
-        if (children){
+        if(funkyStylesheetCreate && elemTag == "style" && typeof children === "string"){
+          //IE < 9 has a weird implementation of stylesheets, 
+          //You can't just append a normal text node of styles to a style element,
+          //You have to first give the stylesheet a type of "text/css", then add the string
+          //as the cssText property.
+          if(!jqElem.attr("type")){
+            jqElem.attr("type", "text/css");
+          }
+          elem.styleSheet.cssText = children;
+        }else if (children){
           if(children.nodeType == 11)
             // Already a document fragment.
             elem.appendChild(children);

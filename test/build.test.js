@@ -168,3 +168,14 @@ test("$.build XSS attacks ARE possible (html is NOT escaped) when using HTML blo
   htmlCompare(tgt.html(), "<div class=\"comment\"><div class=\"author\">hackbot</div><div class=\"comment\">here's my attack!</div></div>");
   equal(window.hackcount, 1)
 });
+
+test("style elements affect the DOM", function (){
+  var $b = $.build;
+  var elem = $b(".styleTest", [
+    $b("style", ".styleTest p {color:green;}"),
+    $b("p", "This text should be green.")
+  ]);
+  var tempElem = $b("div").css("color", "green");
+  $("body").append(elem).append(tempElem);
+  equal($(".styleTest p").css("color"), tempElem.css("color"));
+});
